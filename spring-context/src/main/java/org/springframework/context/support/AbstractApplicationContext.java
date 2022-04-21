@@ -208,10 +208,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Nullable
 	private ApplicationEventMulticaster applicationEventMulticaster;
 
-	/** Statically specified listeners */
+	/** Statically specified listeners 静态指定的监听器 */
 	private final Set<ApplicationListener<?>> applicationListeners = new LinkedHashSet<>();
 
-	/** Local listeners registered before refresh */
+	/**
+	 * Local listeners registered before refresh
+	 * refresh前注册的本地监听器
+	 */
 	@Nullable
 	private Set<ApplicationListener<?>> earlyApplicationListeners;
 
@@ -515,11 +518,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
+		// 加锁，并发安全，锁为一个Object对象实例
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			// 获取BeanFactory；默认实现是DefaultListableBeanFactory (by lagou)
+			// 这个beanFactory很重要，将来的beanDefinition和springBean都在此对象中保存
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -527,12 +533,23 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				// 钩子方法，允许子类对beanFactory进行后置处理
 				postProcessBeanFactory(beanFactory);
 
-				// Invoke factory processors registered as beans in the context.
+				/**
+				 * Invoke factory processors registered as beans in the context.
+				 * 实例化 实现了{@link BeanFactoryPostProcessor}接口的Bean，并调用接口方法（by lagou）
+				 * 利用此接口用户可以实现对beanFactory的后置处理
+				 * 使用AnnotationConfigApplicationContext容器，将在此步骤初始化beanDefinition
+ 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
-				// Register bean processors that intercept bean creation.
+				/**
+				 * Register bean processors that intercept bean creation.
+				 * 注册{@link org.springframework.beans.factory.config.BeanPostProcessor}
+				 * BeanPostProcessor的方法会在每一个bean初始化之前或者之后执行。
+				 * BeanPostProcessor将作用于随后创建的任何bean，BeanPostProcessor的bean初始化之前的bean不会生效
+				 */
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
@@ -542,15 +559,23 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				// 子类重写这个方法，在容器刷新的时候可以自定义逻辑；如创建Tomcat，Jetty等WEB服务器(by lagou)
 				onRefresh();
 
 				// Check for listener beans and register them.
+				// 注册应用的监听器。就是注册实现了ApplicationListener接口的监听器bean(by lagou)
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// 初始化所有剩下的非懒加载的单例bean
+				// 初始化创建非懒加载方式的单例Bean实例（未设置属性）
+				// 填充属性
+				// 初始化方法调用（比如调用afterPropertiesSet方法、init-method方法）
+				// 调用BeanPostProcessor（后置处理器）对实例bean进行后置处理 (by lagou)
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				// 完成context的刷新。主要是调用LifecycleProcessor的onRefresh()方法，并且发布事件（ContextRefreshedEvent）(by lagou)
 				finishRefresh();
 			}
 
@@ -593,10 +618,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+		// 初始化上下文环境中的任何占位符属性源。
+		// TODO: 什么是占位符属性源(by zbx)
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
+		// 验证所有标记为必需的属性都是可解析的：请阅读ConfigurablePropertyResolver#setRequiredProperties
 		getEnvironment().validateRequiredProperties();
 
 		// Store pre-refresh ApplicationListeners...
@@ -852,6 +880,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.
+		// 不清楚转换服务有什么用 TODO: 未来有机会学习一下
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(

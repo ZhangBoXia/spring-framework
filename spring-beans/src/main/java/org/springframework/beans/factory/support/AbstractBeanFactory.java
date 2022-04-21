@@ -312,6 +312,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
+				// 正常情况到这里才开始初始化实例，前面的是一些不常见情况
+				// 传入隐藏内部类ObjectFactory，springBean初始化核心逻辑就在隐藏内部类中
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
