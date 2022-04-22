@@ -39,6 +39,10 @@ import org.springframework.util.Assert;
  * typically registered as {@link GenericBeanDefinition GenericBeanDefinitions}.
  * A root bean definition is essentially the 'unified' bean definition view at runtime.
  *
+ * 根 bean 定义表示在运行时支持 Spring BeanFactory 中的特定 bean 的合并 bean 定义。
+ * 它可能是从相互继承的多个原始 bean 定义创建的，通常注册为 {@link GenericBeanDefinition GenericBeanDefinitions}。
+ * 根 bean 定义本质上是运行时的“统一”bean 定义视图。
+ *
  * <p>Root bean definitions may also be used for registering individual bean definitions
  * in the configuration phase. However, since Spring 2.5, the preferred way to register
  * bean definitions programmatically is the {@link GenericBeanDefinition} class.

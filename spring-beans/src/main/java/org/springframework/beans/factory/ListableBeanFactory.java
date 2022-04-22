@@ -30,7 +30,8 @@ import org.springframework.lang.Nullable;
  * preload all their bean definitions (such as XML-based factories) may implement
  * this interface.
  * 个人理解：ListableBeanFactory是为类似一次性加载所有能加载的spring bean需求服务的，
- * 如果需要按用户需求由用户主动触发bean加载的功能则不建议实现此接口
+ * 如果需要按用户需求由用户主动触发bean加载的功能则不建议实现此接口。
+ * 也是因此此接口提供的方法几乎都是复数形式
  *
  * <p>If this is a {@link HierarchicalBeanFactory}, the return values will <i>not</i>
  * take any BeanFactory hierarchy into account, but will relate only to the beans

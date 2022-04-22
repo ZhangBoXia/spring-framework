@@ -48,6 +48,7 @@ import org.springframework.util.StringUtils;
  * (which might or might not correspond to registered singletons),
  * to be destroyed on shutdown of the registry. Dependencies between
  * beans can be registered to enforce an appropriate shutdown order.
+ *（可能对应于注册的单例，也可能不对应），在注册表关闭时被销毁。 可以注册 bean 之间的依赖关系以强制执行适当的关闭顺序。
  *
  * <p>This class mainly serves as base class for
  * {@link org.springframework.beans.factory.BeanFactory} implementations,
@@ -71,13 +72,14 @@ import org.springframework.util.StringUtils;
 public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements SingletonBeanRegistry {
 
 	/** Cache of singleton objects: bean name --> bean instance */
+	// 通过bean初始化代码推测：此map为spring存储可用springBean对象的地方
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
 	/** Cache of singleton factories: bean name --> ObjectFactory */
-	// todo: 初始化是在什么时候
+	// todo: 初始化是在什么时候，推测是解决循环依赖的缓存，但是具体是一级缓存还是二级不清楚，大概率是二级缓存
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
-	/** Cache of early singleton objects: bean name --> bean instance */
+	/** Cache of early singleton objects: bean name --> bean instance */ // 推测大概率是解决循环依赖的一级缓存
 	private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 
 	/** Set of registered singletons, containing the bean names in registration order */

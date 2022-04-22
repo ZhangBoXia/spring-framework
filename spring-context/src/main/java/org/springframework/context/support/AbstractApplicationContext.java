@@ -549,6 +549,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 注册{@link org.springframework.beans.factory.config.BeanPostProcessor}
 				 * BeanPostProcessor的方法会在每一个bean初始化之前或者之后执行。
 				 * BeanPostProcessor将作用于随后创建的任何bean，BeanPostProcessor的bean初始化之前的bean不会生效
+				 * 有些bean会在此阶段完成初始化
 				 */
 				registerBeanPostProcessors(beanFactory);
 
