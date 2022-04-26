@@ -256,9 +256,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
-		}
-
-		else {
+		} else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
 			if (isPrototypeCurrentlyInCreation(beanName)) {
@@ -289,10 +287,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			try {
+				// 找到 bean 的 definition (bd), 然后生成 merged bean definition (mbd). 这个主要是因为 bd 可以有 parent,
+				// 这个步骤的作用就是把 bd 和 它的 parent bd (如果有的话), 进行merge, 生成 mbd, 之后就要根据这个 mbd 来实例化和初始化 bean.
+				// by blog
 				RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
+				// 检查 mbd , 把 mbd 中 dependsOn 的 bean 都先初始化. (by blog)
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
@@ -312,9 +314,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
-				// 正常情况到这里才开始初始化实例，前面的是一些不常见情况
-				// 传入隐藏内部类ObjectFactory，springBean初始化核心逻辑就在隐藏内部类中
+				// 单例初始化
 				if (mbd.isSingleton()) {
+					// 传入隐藏内部类ObjectFactory，springBean初始化核心逻辑就在隐藏内部类中
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							return createBean(beanName, mbd, args);
@@ -329,7 +331,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					});
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
-
+				// 多例初始化
 				else if (mbd.isPrototype()) {
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
