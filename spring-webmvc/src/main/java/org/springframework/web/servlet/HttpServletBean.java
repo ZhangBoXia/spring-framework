@@ -143,6 +143,7 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * invoke subclass initialization.
 	 * @throws ServletException if bean properties are invalid (or required
 	 * properties are missing), or if subclass initialization fails.
+	 * 看这片文章：https://segmentfault.com/a/1190000039414696
 	 */
 	@Override
 	public final void init() throws ServletException {
@@ -154,6 +155,8 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		PropertyValues pvs = new ServletConfigPropertyValues(getServletConfig(), this.requiredProperties);
 		if (!pvs.isEmpty()) {
 			try {
+				// BeanWrapper 是 Spring 中提供一个工具，使用它可以修改一个对象的属性(by 博客)
+				// 问题：为什么要用BeanWrapper修改对象属性，直接使用setter方法不好吗？
 				BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(this);
 				ResourceLoader resourceLoader = new ServletContextResourceLoader(getServletContext());
 				bw.registerCustomEditor(Resource.class, new ResourceEditor(resourceLoader, getEnvironment()));

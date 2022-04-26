@@ -31,4 +31,5 @@ rootProject.children.each {project ->
 }
 include 'spring-zbx-test'
 include 'spring-lxz-test'
+include 'spring-mvc-zbx-test'
 

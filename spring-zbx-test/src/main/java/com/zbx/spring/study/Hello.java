@@ -25,9 +25,14 @@ public class Hello  {
 	// TODO：什么时候执行
 	@PostConstruct
 	private void init(){
+		System.out.println("PostConstruct注释方法开始执行");
 		list = new ArrayList<>();
 		list.add("zhangboxia");
 		list.add("liuxiaozhu");
+	}
+
+	public Hello() {
+		System.out.println("hello 无参构造方法开始执行");
 	}
 
 	public void hello(){
