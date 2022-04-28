@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+interface BeanFactory{
+    Object getBean(String name)
+}
+interface ListableBeanFactory extends BeanFactory{
+    boolean containsBeanDefinition(String beanName)
+}
+
+interface HierarchicalBeanFactory extends BeanFactory{
+BeanFactory getParentBeanFactory()
+}
+interface AutowireCapableBeanFactory extends BeanFactory
+
+interface ConfigurableBeanFactory extends HierarchicalBeanFactory, SingletonBeanRegistry
+
+interface SingletonBeanRegistry
+
+interface AliasRegistry
+
+interface BeanDefinitionRegistry extends AliasRegistry
+
+class SimpleAliasRegistry implements AliasRegistry
+
+class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements SingletonBeanRegistry
+
+abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanRegistry
+
+interface ConfigurableListableBeanFactory extends ListableBeanFactory, AutowireCapableBeanFactory
+
+abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport implements ConfigurableBeanFactory
+
+abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory
+
+class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory implements ConfigurableListableBeanFactory, BeanDefinitionRegistry
+@enduml

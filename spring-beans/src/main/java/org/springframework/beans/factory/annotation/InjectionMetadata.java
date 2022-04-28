@@ -177,7 +177,7 @@ public class InjectionMetadata {
 			if (this.isField) {
 				Field field = (Field) this.member;
 				ReflectionUtils.makeAccessible(field);
-				field.set(target, getResourceToInject(target, requestingBeanName));
+				field.set(target, getResourceToInject(target, requestingBeanName)); // setter方法设置属性
 			}
 			else {
 				if (checkPropertySkipping(pvs)) {

@@ -72,11 +72,11 @@ import org.springframework.util.StringUtils;
 public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements SingletonBeanRegistry {
 
 	/** Cache of singleton objects: bean name --> bean instance */
-	// 通过bean初始化代码推测：此map为spring存储可用springBean对象的地方
+	// TODO：此map有啥用？，推测是三级缓存
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
 	/** Cache of singleton factories: bean name --> ObjectFactory */
-	// todo: 初始化是在什么时候，推测是解决循环依赖的缓存，但是具体是一级缓存还是二级不清楚，大概率是二级缓存
+	// todo: 推测是解决循环依赖的缓存，推测是一级缓存
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
 	/** Cache of early singleton objects: bean name --> bean instance */ // 推测大概率是解决循环依赖的一级缓存

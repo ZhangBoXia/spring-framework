@@ -54,6 +54,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * will be short-circuited. The only further processing applied is the
 	 * {@link #postProcessAfterInitialization} callback from the configured
 	 * {@link BeanPostProcessor BeanPostProcessors}.
+	 * spring bean实例化之前调用
 	 * <p>This callback will be applied to bean definitions with their bean class,
 	 * as well as to factory-method definitions in which case the returned bean type
 	 * will be passed in here.
@@ -81,6 +82,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * <p>This is the ideal callback for performing custom field injection on the given bean
 	 * instance, right before Spring's autowiring kicks in.
 	 * <p>The default implementation returns {@code true}.
+	 * spring bean实例化之后、属性填充之前进行调用
 	 * @param bean the bean instance created, with properties not having been set yet
 	 * @param beanName the name of the bean
 	 * @return {@code true} if properties should be set on the bean; {@code false}

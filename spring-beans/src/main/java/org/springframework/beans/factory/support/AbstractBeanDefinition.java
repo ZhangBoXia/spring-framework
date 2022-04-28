@@ -141,22 +141,22 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	private volatile Object beanClass;
 
 	@Nullable
-	private String scope = SCOPE_DEFAULT;
+	private String scope = SCOPE_DEFAULT; // 作用域, 默认的有 singleton 和 proto, 前者是我们常用的单例, 后者是每次新建一个 bean. 子类可以实现更多的scope, 比如 session, request.
 
 	private boolean abstractFlag = false;
 
-	private boolean lazyInit = false;
+	private boolean lazyInit = false; // 是否需要懒加载, 通常是由有context的应用来控制.
 
-	private int autowireMode = AUTOWIRE_NO;
+	private int autowireMode = AUTOWIRE_NO; // 可以被autowire按类型, 按名称等
 
-	private int dependencyCheck = DEPENDENCY_CHECK_NONE;
+	private int dependencyCheck = DEPENDENCY_CHECK_NONE; // 依赖 check 策略, 全都 check, 还是只 check 引用类型, 还是只 check 简单类型, 或者不 check
 
 	@Nullable
-	private String[] dependsOn;
+	private String[] dependsOn;  // 依赖的 bean name, 跟是否要注入没关系, 有时是因为要控制 bean 的初始化顺序
 
-	private boolean autowireCandidate = true;
+	private boolean autowireCandidate = true; // 是否可以被 autowire, 默认true
 
-	private boolean primary = false;
+	private boolean primary = false; // autowire 的优先级, 如果有多个 candidate, 会选 primary
 
 	private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>();
 
@@ -168,38 +168,38 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	private boolean lenientConstructorResolution = true;
 
 	@Nullable
-	private String factoryBeanName;
+	private String factoryBeanName; // 如果实例需要由工厂创建, 工厂 bean 的 name.
 
 	@Nullable
 	private String factoryMethodName;
 
 	@Nullable
-	private ConstructorArgumentValues constructorArgumentValues;
+	private ConstructorArgumentValues constructorArgumentValues; // 构造函数参数表
 
 	@Nullable
-	private MutablePropertyValues propertyValues;
+	private MutablePropertyValues propertyValues; // 属性表
 
 	private MethodOverrides methodOverrides = new MethodOverrides();
 
 	@Nullable
-	private String initMethodName;
+	private String initMethodName; // 自定义的初始化方法
 
 	@Nullable
-	private String destroyMethodName;
+	private String destroyMethodName; // 销毁方法
 
 	private boolean enforceInitMethod = true;
 
 	private boolean enforceDestroyMethod = true;
 
-	private boolean synthetic = false;
+	private boolean synthetic = false; // true 表示不需要多余的 实例化,初始化前后处理.
 
-	private int role = BeanDefinition.ROLE_APPLICATION;
+	private int role = BeanDefinition.ROLE_APPLICATION; // bean 的定义者, 0: 由application定义, 即用户定义的. 1: support, 框架支持模块. 2: infrastructure, 框架的基础组件
 
 	@Nullable
 	private String description;
 
 	@Nullable
-	private Resource resource;
+	private Resource resource; // 这个 bean definition 的 resource 引用？？？
 
 
 	/**

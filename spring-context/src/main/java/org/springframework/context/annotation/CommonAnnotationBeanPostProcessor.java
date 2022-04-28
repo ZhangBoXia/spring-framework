@@ -323,7 +323,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		return pvs;
 	}
 
-
+	// 查找@Resource注解注释的属性
 	private InjectionMetadata findResourceMetadata(String beanName, final Class<?> clazz, @Nullable PropertyValues pvs) {
 		// Fall back to class name as cache key, for backwards compatibility with custom callers.
 		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
@@ -514,7 +514,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			resource = factory.getBean(name, element.lookupType);
 			autowiredBeanNames = Collections.singleton(name);
 		}
-
+		// 填充依赖关系map
 		if (factory instanceof ConfigurableBeanFactory) {
 			ConfigurableBeanFactory beanFactory = (ConfigurableBeanFactory) factory;
 			for (String autowiredBeanName : autowiredBeanNames) {

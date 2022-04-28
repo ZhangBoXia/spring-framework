@@ -755,6 +755,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				}
 				else {
 					// bean初始化核心方法，spring bean的初始化在此方法中进行
+					// https://www.jianshu.com/p/4b9d7455c8b2 这篇文章不错
 					getBean(beanName);
 				}
 			}

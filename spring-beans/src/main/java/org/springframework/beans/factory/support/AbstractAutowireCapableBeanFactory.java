@@ -551,7 +551,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.postProcessed) {
 				try {
 					// 对 mbd 进行初始化前的操作, 比如扫描 class 定义, 找到 @autowired 注解来生成注入信息存放在 mbd 中.(by blog)
-					// todo debug观察一下beanDefinition的变化
+					// 对mbd中externally属性进行赋值操作
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -563,7 +563,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Eagerly cache singletons to be able to resolve circular references
-		// even when triggered by lifecycle interfaces like BeanFactoryAware.急切地缓存单例以便能够解析循环引用，即使是由生命周期接口（如BeanFactoryAware）触发。(by 机翻)
+		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+		// 急切地缓存单例以便能够解析循环引用，即使是由生命周期接口（如BeanFactoryAware）触发。(by 机翻)
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -573,6 +574,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			// 将创建出来但未设置属性值的bean放入缓存中
 			// 为了解决循环引用, 把未初始化的 bean 的 reference 提供出来(by blog)
+			// 如果DefaultSingletonBeanRegistry.singletonObjects中没有，那么就放入singletonFactories和registeredSingletons
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -582,8 +584,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// bean属性填充，如果有循环依赖，将执行目标对象的创建。
 			// 例如：hello对象依赖world对象，那没将中断hello的属性填充，转而创建world对象
 			populateBean(beanName, mbd, instanceWrapper);
-			// 调用初始化方法，应用BeanPostProcessor后置处理器
-			// 实例化完毕之后, 进行初始化.
+			// 1、调用aware方法
+			// 2、BeanPostProcessor接口的前置处理方法
+			// 3、执行初始化方法
+			// 4、BeanPostProcessor接口的后置处理方法
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1316,7 +1320,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				}
 			}
 		}
-
+		// TODO：什么时候这个参数会不为null || 这个参数是用来干什么的
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
 		// 把能够 set 的的属性写入 pvs
@@ -1336,7 +1340,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
 		boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);
-		// 把一些特殊属性写入, 比如没有 set 的 autowired 属性, 一些 @Value 的属性(by blog)
+		// 通过InstantiationAwareBeanPostProcessor类的postProcessPropertyValues方法，把一些特殊属性写入,
+		// 比如没有 set 的 autowired 属性；CommonAnnotationBeanPostProcessor 处理@Resource 注释的属性；
 		if (hasInstAwareBpps || needsDepCheck) {
 			if (pvs == null) {
 				pvs = mbd.getPropertyValues();
