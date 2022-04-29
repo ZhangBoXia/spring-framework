@@ -244,7 +244,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
-		// 获取初始化时缓存中的实例，TODO：为什么要先获取初始化缓存实例？
+		// 获取初始化时缓存中的实例
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isDebugEnabled()) {
