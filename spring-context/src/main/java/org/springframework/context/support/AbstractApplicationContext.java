@@ -569,10 +569,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Instantiate all remaining (non-lazy-init) singletons.
 				// 初始化所有剩下的非懒加载的单例bean
-				// 初始化创建非懒加载方式的单例Bean实例（未设置属性）
-				// 填充属性
-				// 初始化方法调用（比如调用afterPropertiesSet方法、init-method方法）
-				// 调用BeanPostProcessor（后置处理器）对实例bean进行后置处理 (by lagou)
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.

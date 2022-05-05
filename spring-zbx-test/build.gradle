@@ -13,7 +13,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.12'
+    optional( 'junit:junit:4.12')
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     implementation(project(":spring-context"))
+    optional("org.aspectj:aspectjweaver:${aspectjVersion}")
 }
