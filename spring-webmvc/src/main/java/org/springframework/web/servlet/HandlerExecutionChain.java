@@ -40,13 +40,13 @@ public class HandlerExecutionChain {
 
 	private static final Log logger = LogFactory.getLog(HandlerExecutionChain.class);
 
-	private final Object handler;
+	private final Object handler; // 处理器，可能是Controller 或者 HandleMethod
 
 	@Nullable
 	private HandlerInterceptor[] interceptors;
 
 	@Nullable
-	private List<HandlerInterceptor> interceptorList;
+	private List<HandlerInterceptor> interceptorList; // 针对此handler的拦截器集合
 
 	private int interceptorIndex = -1;
 

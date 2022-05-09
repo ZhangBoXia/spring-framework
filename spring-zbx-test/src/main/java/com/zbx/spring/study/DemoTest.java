@@ -13,7 +13,7 @@ public class DemoTest {
 
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(ZbxConfig.class);
-
+		applicationContext.start();
 		DemoClass bean = applicationContext.getBean(DemoClass.class);
 		bean.test();
 	}
