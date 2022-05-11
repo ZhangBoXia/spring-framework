@@ -76,7 +76,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 
 	private final List<Object> interceptors = new ArrayList<>();
 
-	private final List<HandlerInterceptor> adaptedInterceptors = new ArrayList<>();
+	private final List<HandlerInterceptor> adaptedInterceptors = new ArrayList<>(); // HandlerInterceptor、WebRequestInterceptor(适配成WebRequestHandlerInterceptorAdapter)[加入到adaptedInterceptors中]
 
 	private final UrlBasedCorsConfigurationSource globalCorsConfigSource = new UrlBasedCorsConfigurationSource();
 

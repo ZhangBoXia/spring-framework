@@ -1,4 +1,4 @@
-package com.zbx.spring.study;
+package com.zbx.spring.study.ioc;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
