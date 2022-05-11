@@ -12,15 +12,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class DemoTest {
 
 	public static void main(String[] args) {
-		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(ZbxConfig.class);
+		AnnotationConfigApplicationContext applicationContext =
+				new AnnotationConfigApplicationContext(ZbxConfig.class);
 		applicationContext.start();
 		DemoClass bean = applicationContext.getBean(DemoClass.class);
 		bean.test();
 	}
 
 	@Test
-	public void testAop(){
-		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(ZbxConfig.class);
+	public void testAop() {
+		AnnotationConfigApplicationContext applicationContext =
+				new AnnotationConfigApplicationContext(ZbxConfig.class);
 		UserService bean = applicationContext.getBean(UserService.class);
 		bean.createUser("老A", "aaa");
 		bean.login("老A", "aaa");
