@@ -529,6 +529,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			// 为上下文准备BeanFactory，即对beanFactory各种功能进行填充，如常用的注解@Autowired @Qualifier等 TODO：不是很理解这句话
+			// 添加ApplicationContextAwareProcessor处理器
+			// 在依赖注入忽略实现*Aware的接口，如EnvironmentAware、ApplicationEventPublisherAware等
+			// 注册依赖，如一个bean的属性中含有ApplicationEventPublisher(beanFactory)，则会将beanFactory的实例注入进去
 			prepareBeanFactory(beanFactory);
 
 			try {
@@ -539,17 +543,18 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				/**
 				 * Invoke factory processors registered as beans in the context.
 				 * 实例化 实现了{@link BeanFactoryPostProcessor}接口的Bean，并调用接口方法（by lagou）
-				 * 利用此接口用户可以实现对beanFactory的后置处理
 				 * 使用AnnotationConfigApplicationContext容器，将在此步骤初始化beanDefinition
+				 * 此方法将：1、扫描所有的Config类所在包下的所有类，以及@Bean注解的类生成BeanDefinition
+				 * 			2、Configuration注解的类生成代理对象
+				 * 执行对应的postProcessBeanDefinitionRegistry方法 和  postProcessBeanFactory方法
  				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				/**
 				 * Register bean processors that intercept bean creation.
-				 * 注册{@link org.springframework.beans.factory.config.BeanPostProcessor}
 				 * BeanPostProcessor的方法会在每一个bean初始化之前或者之后执行。
 				 * BeanPostProcessor将作用于随后创建的任何bean
-				 * 此方法中初始化所有继承BeanPostProcessor的bean（只有被声明为spring bean的才会被初始化）
+				 * 初始化所有实现了{@link org.springframework.beans.factory.config.BeanPostProcessor}的类
 				 */
 				registerBeanPostProcessors(beanFactory);
 
@@ -557,6 +562,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				// 初始化上下文事件广播器，并放入applicatioEventMulticaster,如ApplicationEventPublisher
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
@@ -565,6 +571,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Check for listener beans and register them.
 				// 注册应用的监听器。就是注册实现了ApplicationListener接口的监听器bean(by lagou)
+				// 在所有bean中查找listener bean，然后注册到广播器中
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
@@ -572,7 +579,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
-				// 完成context的刷新。主要是调用LifecycleProcessor的onRefresh()方法，并且发布事件（ContextRefreshedEvent）(by lagou)
+				// 通过spring的事件发布机制发布ContextRefreshedEvent事件，以保证对应的监听器做进一步的处理
+				// 即对那种在spring启动后需要处理的一些类，这些类实现了ApplicationListener<ContextRefreshedEvent>，
+				// 这里就是要触发这些类的执行(执行onApplicationEvent方法)
+				// 另外，spring的内置Event有ContextClosedEvent、ContextRefreshedEvent、ContextStartedEvent、ContextStoppedEvent、RequestHandleEvent
+				// 完成初始化，通知生命周期处理器lifeCycleProcessor刷新过程，同时发出ContextRefreshEvent通知其他人
 				finishRefresh();
 			}
 
