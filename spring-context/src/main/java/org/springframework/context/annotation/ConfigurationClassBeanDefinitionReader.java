@@ -138,11 +138,17 @@ class ConfigurationClassBeanDefinitionReader {
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+		// @Bean注解的方法，将对应的metadata包装为BeanDefinition并注册到容器。
+		// 这里并没有执行方法，真正执行方法是在实例化的时候。
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
+		// 加载导入资源
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+		// 这里是加载ImportBeanDefinitionRegistrar接口注册的BeanDefinition，通过调用registerBeanDefinitions()来注入
+		// 主要是解析类上@Import导入的类中如果是ImportBeanDefinitionRegistrar接口，则调用registerBeanDefinitions()
+		// AOP代理AnnotationAwareAspectJAutoProxyCreator类便是在这里注册
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 

@@ -220,6 +220,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
 		int registryId = System.identityHashCode(registry);
+		// 相同的registry仅执行一次
 		if (this.registriesPostProcessed.contains(registryId)) {
 			throw new IllegalStateException(
 					"postProcessBeanDefinitionRegistry already called on this post-processor against " + registry);
@@ -271,6 +272,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
+			// 校验是否符合条件，完成对@Configuration、@Component、@ComponentScan、@Import、@ImportResource、方法上包含@Bean 的支持
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
@@ -313,7 +315,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
-			// parse方法注册config所在包下所有bean的definition对象
+			// parse方法，解析通过checkConfigurationClassCandidate()方法的bd
+			// ConfigurationClassParser的parse方法调用，这里解析了一系列的注解
 			parser.parse(candidates);
 			parser.validate();
 
@@ -326,7 +329,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
-			// 加载的是:1、用户定义的类中由@Bean注解的方法；2、config类上注解相关类如：AutoProxyCreator。TODO：configClasses如何定义，加载那些类
+			// 加载的是:1、用户定义的类中由@Bean注解的方法；2、config类上注解相关类如：AutoProxyCreator。
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 

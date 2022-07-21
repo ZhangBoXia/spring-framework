@@ -59,6 +59,7 @@ final class PostProcessorRegistrationDelegate {
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
+			// 对参数中传入的beanFactoryPostProcessors优先执行BeanDefinitionRegistryPostProcessor的方法，然后添加到registryProcessors中。
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =
@@ -105,6 +106,7 @@ final class PostProcessorRegistrationDelegate {
 			currentRegistryProcessors.clear();
 
 			// Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.
+			// 执行所有的BeanDefinitionRegistryPostProcessors，直到没有新的出现
 			boolean reiterate = true;
 			while (reiterate) {
 				reiterate = false;
@@ -121,13 +123,16 @@ final class PostProcessorRegistrationDelegate {
 				invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 				currentRegistryProcessors.clear();
 			}
-			// 生成Configuration注解类的代理对象
+			// 执行postProcessBeanFactory方法。先执行实现了BeanDefinitionRegistryPostProcessor接口的，
+			// 再执行实现了BeanFactoryPostProcessor的。
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
 			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
 		}
 
 		else {
+			// todo: 为什么第一次进来会走到这里
+			// 第一次进来会走到这里，因为参数beanFactoryPostProcessors是空的，实际上这里什么都没做。
 			// Invoke factory processors registered with the context instance.
 			invokeBeanFactoryPostProcessors(beanFactoryPostProcessors, beanFactory);
 		}

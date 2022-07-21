@@ -167,6 +167,7 @@ class ConfigurationClassParser {
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
+				// 对不同类型的 BeanDefinition 会调用不同的重载 parse()，最终会进入processConfigurationClass()方法
 				if (bd instanceof AnnotatedBeanDefinition) {
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
@@ -247,6 +248,7 @@ class ConfigurationClassParser {
 		}
 		while (sourceClass != null);
 
+		// 这里将配置类的信息放入缓存中，等解析完之后，会将配置类进行LoadBeanDefinitions();
 		this.configurationClasses.put(configClass, configClass);
 	}
 
@@ -278,6 +280,7 @@ class ConfigurationClassParser {
 			}
 		}
 
+		// @ComponentScan，@ComponentScans支持
 		// Process any @ComponentScan annotations
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
@@ -285,6 +288,7 @@ class ConfigurationClassParser {
 				!this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
 			for (AnnotationAttributes componentScan : componentScans) {
 				// The config class is annotated with @ComponentScan -> perform the scan immediately
+				// 扫描获取指定包下所有@Component注解类，并生成bd注册到beanFactory中
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
@@ -293,6 +297,7 @@ class ConfigurationClassParser {
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
+					// 如果解析出来的beanDefinition也是配置类，则递归执行parse方法
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}
@@ -300,6 +305,7 @@ class ConfigurationClassParser {
 			}
 		}
 
+		// 处理@Import注解导入
 		// Process any @Import annotations
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
@@ -321,6 +327,7 @@ class ConfigurationClassParser {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
 
+		// 处理接口上的默认方法
 		// Process default methods on interfaces
 		processInterfaces(configClass, sourceClass);
 
@@ -596,6 +603,7 @@ class ConfigurationClassParser {
 			return;
 		}
 
+		// 检测循环导入
 		if (checkForCircularImports && isChainedImportOnStack(configClass)) {
 			this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
 		}
@@ -614,11 +622,14 @@ class ConfigurationClassParser {
 									new DeferredImportSelectorHolder(configClass, (DeferredImportSelector) selector));
 						}
 						else {
+							// 实例化 ImportSelector 后，会执行selectImports()方法。获取到一个className数组。
+							// 将其封装为SourceClass，然后递归调用当前方法，最终会走到else语句块中。
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
 					}
+					// EnableAspectJAutoProxy中导入的AspectJAutoProxyRegistrar就是实现了ImportBeanDefinitionRegistrar
 					else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
 						// delegate to it to register additional bean definitions

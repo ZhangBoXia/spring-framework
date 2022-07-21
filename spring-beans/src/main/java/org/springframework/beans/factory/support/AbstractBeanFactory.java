@@ -256,7 +256,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.debug("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
-			// 获取已经初始化完成的实例
+			// 处理如果为FactoryBean的情况
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		} else {
 			// Fail if we're already creating this bean instance:
@@ -291,7 +291,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			try {
 				// 找到 bean 的 definition (bd), 然后生成 merged bean definition (mbd). 这个主要是因为 bd 可以有 parent,
 				// 这个步骤的作用就是把 bd 和 它的 parent bd (如果有的话), 进行merge, 生成 mbd, 之后就要根据这个 mbd 来实例化和初始化 bean.
-				// by blog
 				RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 				checkMergedBeanDefinition(mbd, beanName, args);
 
@@ -331,6 +330,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw ex;
 						}
 					});
+					// 如果bean不是FactoryBean类型或者beanName以&开头，则直接返回。
+					// 否则调用FactoryBean的getObject(),且将返回的bean替换为getObject()的返回值。
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 				// 多例初始化
@@ -1647,12 +1648,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Now we have the bean instance, which may be a normal bean or a FactoryBean.
 		// If it's a FactoryBean, we use it to create a bean instance, unless the
 		// caller actually wants a reference to the factory.
-		// beanInstance如果不是FactoryBean则直接返回
+		// beanInstance如果不是FactoryBean或者name开头为&则直接返回
 		if (!(beanInstance instanceof FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) {
 			return beanInstance;
 		}
 
 		Object object = null;
+		// 如果BeanDefinition为null，从缓存中获取，doGetBean() 中传入的就是null
+		// createBean后进入这里的话，传入的就不是null
 		if (mbd == null) {
 			object = getCachedObjectForFactoryBean(beanName);
 		}

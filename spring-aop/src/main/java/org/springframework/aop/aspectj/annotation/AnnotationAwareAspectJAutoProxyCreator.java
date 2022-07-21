@@ -89,9 +89,12 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 	@Override
 	protected List<Advisor> findCandidateAdvisors() {
 		// Add all the Spring advisors found according to superclass rules.
+		// 从父类中获取，这里获取了所有注入到容器中的Advisor类型的实例。事务的增强实例，就是在这里查找的。
 		List<Advisor> advisors = super.findCandidateAdvisors();
 		// Build Advisors for all AspectJ aspects in the bean factory.
 		if (this.aspectJAdvisorsBuilder != null) {
+			//  将beanFactory中缓存的所有bean实例，依次校验是否带有@Aspect注解，如果有，将其中的
+			//  增强方法、切点表达式等信息，封装成Advisor。advisors变量最终存储了所有切面的增强方法封装。
 			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
 		}
 		return advisors;

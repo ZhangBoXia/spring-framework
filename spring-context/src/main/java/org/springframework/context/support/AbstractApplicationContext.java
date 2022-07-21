@@ -552,13 +552,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				/**
 				 * Register bean processors that intercept bean creation.
-				 * BeanPostProcessor的方法会在每一个bean初始化之前或者之后执行。
-				 * BeanPostProcessor将作用于随后创建的任何bean
-				 * 初始化所有实现了{@link org.springframework.beans.factory.config.BeanPostProcessor}的类
+				 * 1、初始化所有实现了{@link org.springframework.beans.factory.config.BeanPostProcessor}的类
+				 * 2、对这些bean进行排序
+				 * 3、对这些bean进行注册
 				 */
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				// 国际化支持
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
