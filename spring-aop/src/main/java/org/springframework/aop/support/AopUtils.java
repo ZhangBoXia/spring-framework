@@ -306,6 +306,7 @@ public abstract class AopUtils {
 			return candidateAdvisors;
 		}
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
+		// 先处理IntroductionAdvisor类型的增强
 		for (Advisor candidate : candidateAdvisors) {
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
@@ -317,6 +318,7 @@ public abstract class AopUtils {
 				// already processed
 				continue;
 			}
+			// 我们自定义的切面，就会走到这里，使用已经封装的PointcutAdvisor，根据切点表达式进行匹配，具体的匹配过程，不用看。
 			if (canApply(candidate, clazz, hasIntroductions)) {
 				eligibleAdvisors.add(candidate);
 			}

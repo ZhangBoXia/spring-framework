@@ -154,9 +154,12 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 	@Override
 	@Nullable
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		// 存储在调用方法之前，当前线程中的方法调用链中的上一个代理对象。
+		// 比如 代理A -> 代理B -> 当前代理方法。那么方法内 oldProxy 会存储前面的代理对象。因为在这个方法执行完之前，会将
+		// 一个全局的ThreadLocal变量置换为当前的代理对象，旧的值需要缓存起来，等到当前方法执行结束，再设置回原值。
 		Object oldProxy = null;
 		boolean setProxyContext = false;
-
+		// 从代理工厂中拿到TargetSource对象，该对象包装了被代理实例bean
 		TargetSource targetSource = this.advised.targetSource;
 		Object target = null;
 
@@ -175,7 +178,7 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				// There is only getDecoratedClass() declared -> dispatch to proxy config.
 				return AopProxyUtils.ultimateTargetClass(this.advised);
 			}
-			//如果一个类的接口是Advised类，则spring 不会使用增强。而是直接通过反射方法进行调用
+			// 如果一个类的接口是Advised类，则spring 不会使用增强。而是直接通过反射方法进行调用
 			else if (!this.advised.opaque && method.getDeclaringClass().isInterface() &&
 					method.getDeclaringClass().isAssignableFrom(Advised.class)) {
 				// Service invocations on ProxyConfig with the proxy config...
@@ -183,7 +186,7 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			}
 
 			Object retVal;
-
+			// 如果需要暴露代理对象（在配置文件或者注解中全局配置的），则将当前代理对象放入到一个全局的ThreadLocal变量中。
 			if (this.advised.exposeProxy) {
 				// Make invocation available if necessary.
 				oldProxy = AopContext.setCurrentProxy(proxy);
@@ -197,10 +200,13 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			Class<?> targetClass = (target != null ? target.getClass() : null);
 
 			// Get the interception chain for this method.
+			// 从代理工厂中拿过滤器链 Object是一个MethodInterceptor类型的对象，其实就是一个advice对象，或者说是MethodInterceptor
 			List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 
 			// Check whether we have any advice. If we don't, we can fallback on direct
 			// reflective invocation of the target, and avoid creating a MethodInvocation.
+			// 如果该方法没有执行链，则说明这个方法不需要被拦截，则直接反射调用。
+			// 因为执行链不论是否为空，都会被缓存到一个ConcurrentHashMap中，执行只有第一次相对较慢。
 			if (chain.isEmpty()) {
 				// We can skip creating a MethodInvocation: just invoke the target directly
 				// Note that the final invoker must be an InvokerInterceptor so we know it does
@@ -210,9 +216,12 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			}
 			else {
 				// We need to create a method invocation...
+				// 这里面调用了执行链，在执行链的调用中，会进行火炬传递。具体执行流程，重点在ReflectiveMethodInvocation.proceed()。
 				MethodInvocation invocation =
 						new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
 				// Proceed to the joinpoint through the interceptor chain.
+				// 在递归结束后，这里最终也会返回实际方法的返回值。火炬传递的过程，实际上也是递归，只是将ReflectiveMethodInvocation
+				// 本身当做参数不断地向下传递。
 				retVal = invocation.proceed();
 			}
 
@@ -233,11 +242,17 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			return retVal;
 		}
 		finally {
+			// 单例情况下，targetSource类型是SingletonTargetSource，这个类中的releaseTarget是个空方法
 			if (target != null && !targetSource.isStatic()) {
 				// Must have come from TargetSource.
 				targetSource.releaseTarget(target);
 			}
+			// 如果配置了允许暴露代理对象，在前面设置ThreadLocal变量时，会把局部变量setProxyContext设置为true
 			if (setProxyContext) {
+				// 将旧的代理对象设置到当前代理对象中，这里和执行链火炬传递式无关的。
+				// 如果当前代理方法是从一个代理对象方法内调用过来的，那么这个ThreadLocal变量中是有值的，执行当前代理对象方法时，
+				// 设置为当前的代理对象，执行完后，需要重新设置回原来的代理对象，这样才不会乱套。
+				// 其用途是，当项目中配置允许暴露代理对象时，可以通过AopContext.currentProxy() 来获取到当前线程正在执行的代理对象。
 				// Restore old proxy.
 				AopContext.setCurrentProxy(oldProxy);
 			}
