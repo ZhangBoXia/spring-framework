@@ -16,6 +16,7 @@ public class HitAspect {
 	@Before("com.zbx.spring.study.aop.SystemArchitecture.userPointCut()")
 	public void hit(){
 		i++;
+		System.out.println("i:"+i);
 	}
 
 	public int getI(){

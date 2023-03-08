@@ -349,6 +349,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			definition = new DefaultTransactionDefinition();
 		}
 
+		// 判断是否已经存在事务。如果当前事务对象已经持有了链接，并且事务是活跃状态，则表示已经存在事务。
+		// 如果当前已经存在事务，按照已存在事务的方式判断传播行为，进行处理
 		if (isExistingTransaction(transaction)) {
 			// Existing transaction found -> check propagation behavior to find out how to behave.
 			return handleExistingTransaction(definition, transaction, debugEnabled);
@@ -367,6 +369,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		else if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRED ||
 				definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
 				definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED) {
+			// 因为以上三种事务传播属性的特性，这里会挂起（如果当前存在事务）
 			SuspendedResourcesHolder suspendedResources = suspend(null);
 			if (debugEnabled) {
 				logger.debug("Creating new transaction with name [" + definition.getName() + "]: " + definition);
@@ -376,6 +379,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
 				doBegin(transaction, definition);
+				// 如果是新开启的事务，设置事务管理器相关属性。其实走到这里的代码，一定是新启的事务。
+				// 因为前面已经判断了，如果存在事务，就走handleExistingTransaction方法
 				prepareSynchronization(status, definition);
 				return status;
 			}

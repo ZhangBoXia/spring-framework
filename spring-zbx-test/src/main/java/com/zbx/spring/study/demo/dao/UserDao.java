@@ -1,6 +1,7 @@
 package com.zbx.spring.study.demo.dao;
 
 import com.zbx.spring.study.demo.bean.User;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author zhangboxia
  */
 @Component
+//@ComponentScan("com.zbx.spring.study.aop")
 public class UserDao {
 
 	private Map<String, User> userCache;

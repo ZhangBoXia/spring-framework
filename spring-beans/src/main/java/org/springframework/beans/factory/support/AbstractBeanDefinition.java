@@ -147,7 +147,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean lazyInit = false; // 是否需要懒加载, 通常是由有context的应用来控制.
 
-	private int autowireMode = AUTOWIRE_NO; // 可以被autowire按类型, 按名称等
+	private int autowireMode = AUTOWIRE_NO; // 可以被autowire按类型, 按名称等 0表示所有
 
 	private int dependencyCheck = DEPENDENCY_CHECK_NONE; // 依赖 check 策略, 全都 check, 还是只 check 引用类型, 还是只 check 简单类型, 或者不 check
 
@@ -191,7 +191,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean enforceDestroyMethod = true;
 
-	private boolean synthetic = false; // true 表示不需要多余的 实例化,初始化前后处理.
+	private boolean synthetic = false; // 和AOP有关，如果为true会进入resolveBeforeInstantiation方法
 
 	private int role = BeanDefinition.ROLE_APPLICATION; // bean 的定义者, 0: 由application定义, 即用户定义的. 1: support, 框架支持模块. 2: infrastructure, 框架的基础组件
 

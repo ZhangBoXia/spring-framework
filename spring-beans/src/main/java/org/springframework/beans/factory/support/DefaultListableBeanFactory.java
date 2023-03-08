@@ -733,6 +733,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// Trigger initialization of all non-lazy singleton beans...
 		// 根据beanName循环初始化spring bean
 		for (String beanName : beanNames) {
+			// 处理现实中Java父子类关系（by lagou）
+			// 1. beanName对应的beanDefinition 没有parent，且beanDefinition是Root类型，则调用clone方法返回
+			// 2. beanName对应的beanDefinition 没有parent，且beanDefinition不是Root类型，新建Root
+			// 3. beanName对应的beanDefinition 有parent，合并。合并逻辑详解https://blog.csdn.net/kznsbs/article/details/109394582
+			// 第三种情况很少见，在xml配置bean时，需要增加parent属性。
+			// RootBeanDefinition 和 Generic最大区别在get/set parent属性上，Root的get方法返回null，set抛异常
+			// 这里使用RootBeanDefinition 而不用 Generic的目的是：1、表明这是最顶级类，不需要合并或已经合并完成；2、从接口上防止后续的逻辑修改它的父类
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
 				if (isFactoryBean(beanName)) {

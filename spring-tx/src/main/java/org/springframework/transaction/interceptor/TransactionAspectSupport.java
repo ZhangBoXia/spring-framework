@@ -277,7 +277,17 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	@Nullable
 	protected Object invokeWithinTransaction(Method method, @Nullable Class<?> targetClass,
 			final InvocationCallback invocation) throws Throwable {
-
+		/*
+		 *  其中事务传播行为的特点（这些特点，仔细分析代码是可以看出来的。相对比较烧脑。一般先了解特点，后面才会看源码）：
+		 *  PROPAGATION_REQUIRED 如果当前存在事务，假如当前事务。如果不存在事务，新建事务。
+		 *  PROPAGATION_REQUIRES_NEW 如果当前存在事务，则挂起当前事务，新建一个事务。如果不存在事务，新建一个事务。使用频率高
+		 *  PROPAGATION_NESTED 如果当前存在事务，则在嵌套事务内执行。如果当前不存在事务，则和PROPAGATION_REQUIRED一样新建事务。
+		 *      特点：外围事务回滚，嵌套事务全部回滚。嵌套事务回滚，如果在外围中捕获了，则仅仅回滚嵌套事务。
+		 *  PROPAGATION_MANDATORY 以事务方式运行，如果当前不存在事务，则抛出异常
+		 *  PROPAGATION_NEVER 以非事务方式运行，如果当前存在事务，则抛出异常
+		 *  PROPAGATION_SUPPORTEDS 支持事务。如果当前存在事务，加入当前事务。如果不存在事务，则以非事务方式运行。
+		 *  PROPAGATION_NOT_SUPPORTED 以非事务方式运行。如果当前存在事务，挂起当前事务。
+		 */
 		// If the transaction attribute is null, the method is non-transactional.
 		TransactionAttributeSource tas = getTransactionAttributeSource();
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
@@ -473,6 +483,11 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
+				//  重点：获取TransactionStatus对象
+				//  无论被代理对象的方法是否需要事务，在通过代理对象调用方法时，总会创建一个TransactionStatus，将一些信息绑定到
+				//  ThreadLocal的缓存变量中。这是为了在执行完方法的时候，可以回溯到调用方法存在的事务对象。类似责任链。
+				//  如果挂起了存在的事务，则当前方法执行的事务状态对象中会存储SuspendedResourcesHolder，及挂起的事务信息，
+				//  当方法执行完后，将这个挂起从新设置到当前事务中来。
 				status = tm.getTransaction(txAttr);
 			}
 			else {

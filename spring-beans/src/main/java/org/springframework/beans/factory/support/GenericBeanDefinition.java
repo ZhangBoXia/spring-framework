@@ -41,7 +41,7 @@ import org.springframework.util.ObjectUtils;
 public class GenericBeanDefinition extends AbstractBeanDefinition {
 
 	@Nullable
-	private String parentName; // bean 的名字
+	private String parentName;
 
 
 	/**

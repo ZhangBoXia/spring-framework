@@ -48,6 +48,12 @@ import org.springframework.lang.Nullable;
  */
 final class PostProcessorRegistrationDelegate {
 
+	/**
+	 * 1、先执行beanFactoryPostProcessors参数传入的BeanDefinitionRegistryPostProcessor类型的postProcessBeanDefinitionRegistry方法
+	 * 2、
+	 * 3、在执行beanFactoryPostProcessors参数的postProcessBeanFactory方法
+	 * 3、
+	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
@@ -64,6 +70,7 @@ final class PostProcessorRegistrationDelegate {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =
 							(BeanDefinitionRegistryPostProcessor) postProcessor;
+					// 1、先执行参数传入的BeanDefinitionRegistryPostProcessor类型的postProcessBeanDefinitionRegistry方法
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
 					registryProcessors.add(registryProcessor);
 				}
@@ -87,6 +94,7 @@ final class PostProcessorRegistrationDelegate {
 					processedBeans.add(ppName);
 				}
 			}
+			// 2、获取容器中所有实现了BeanDefinitionRegistryPostProcessor和PriorityOrdered类型的类初始化，然后排序执行
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			registryProcessors.addAll(currentRegistryProcessors);
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
@@ -100,19 +108,21 @@ final class PostProcessorRegistrationDelegate {
 					processedBeans.add(ppName);
 				}
 			}
+			// 3、获取容器中所有实现了BeanDefinitionRegistryPostProcessor和Ordered类型的类初始化，然后排序执行
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			registryProcessors.addAll(currentRegistryProcessors);
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 			currentRegistryProcessors.clear();
 
 			// Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.
-			// 执行所有的BeanDefinitionRegistryPostProcessors，直到没有新的出现
+			// 执行所有的剩下的BeanDefinitionRegistryPostProcessors，直到没有新的出现
 			boolean reiterate = true;
 			while (reiterate) {
 				reiterate = false;
 				postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 				for (String ppName : postProcessorNames) {
 					if (!processedBeans.contains(ppName)) {
+						// 初始化BeanDefinitionRegistryPostProcessor类型的类
 						currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 						processedBeans.add(ppName);
 						reiterate = true;
@@ -124,7 +134,7 @@ final class PostProcessorRegistrationDelegate {
 				currentRegistryProcessors.clear();
 			}
 			// 执行postProcessBeanFactory方法。先执行实现了BeanDefinitionRegistryPostProcessor接口的，
-			// 再执行实现了BeanFactoryPostProcessor的。
+			// 再执行仅实现了BeanFactoryPostProcessor的。
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
 			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);

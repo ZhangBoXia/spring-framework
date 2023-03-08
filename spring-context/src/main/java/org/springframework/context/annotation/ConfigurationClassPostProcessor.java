@@ -272,7 +272,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
-			// 校验是否符合条件，完成对@Configuration、@Component、@ComponentScan、@Import、@ImportResource、方法上包含@Bean 的支持
+			// 校验符合条件的加入configCandidates
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
@@ -314,6 +314,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
+		// 通过回溯法，一遍一遍对candidates中的进行元素进行，解析、删除、新增
+		// 最终，将所有需要加载的bean全部注册到ioc容器
+		// 1、config类中被@Bean注解的方法对应的类；2、@ComponentScan指定的包下所有被@Component注解的类；3、@Import指定的类
 		do {
 			// parse方法，解析通过checkConfigurationClassCandidate()方法的bd
 			// ConfigurationClassParser的parse方法调用，这里解析了一系列的注解
@@ -377,6 +380,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Map<String, AbstractBeanDefinition> configBeanDefs = new LinkedHashMap<>();
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
+			// 配置类会为TRUE
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef)) {
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
 					throw new BeanDefinitionStoreException("Cannot enhance @Configuration bean definition '" +
