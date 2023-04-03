@@ -10,7 +10,11 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.type.MethodMetadata;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,12 +25,25 @@ import java.util.concurrent.TimeUnit;
 
 public class DemoTest {
 
-	public static void main(String[] args) {
-		AnnotationConfigApplicationContext applicationContext =
-				new AnnotationConfigApplicationContext(ZbxConfig.class);
-		applicationContext.start();
-		DemoClass bean = applicationContext.getBean(DemoClass.class);
-		bean.test();
+	public static void main(String[] args) throws InterruptedException {
+		Thread thread = new Thread(new Runnable(){
+
+			@Override
+			public void run() {
+				try {
+					System.out.println("开始睡眠 。。。");
+					Thread.sleep(10000);
+					System.out.println("结束睡眠 。。。");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		thread.setDaemon(true);
+		thread.start();
+		System.out.println("主线程开始睡眠 。。。");
+		Thread.sleep(5000);
+		System.out.println("主线程结束睡眠 。。。");
 	}
 
 	@Test
@@ -40,7 +57,6 @@ public class DemoTest {
 		AnnotatedGenericBeanDefinition zbxConfig = (AnnotatedGenericBeanDefinition)applicationContext.getBeanDefinition("zbxConfig");
 		Set<MethodMetadata> bean1 = zbxConfig.getMetadata().getAnnotatedMethods("bean");
 		String[] strings = zbxConfig.attributeNames();
-
 		System.out.println(h.getI());
 	}
 
@@ -48,7 +64,7 @@ public class DemoTest {
 	public void testConfig(){
 		AnnotationConfigApplicationContext applicationContext =
 				new AnnotationConfigApplicationContext(DemoConfig.class);
-
+		
 		Arrays.stream(applicationContext.getBeanDefinitionNames()).forEach(s -> System.out.println(s));
 	}
 
@@ -95,4 +111,6 @@ public class DemoTest {
 			e.printStackTrace();
 		}
 	}
+
+
 }
